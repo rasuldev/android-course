@@ -1,7 +1,7 @@
 package com.bignerdranch.android.geoquiz;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +35,7 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
 
+    SharedPreferences prefs;
     private int mCurrentIndex = 0;
 
     @Override
@@ -60,8 +61,17 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
+        prefs = getPreferences(0);
+
         if (savedInstanceState != null)
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+        else
+        {
+            Log.d(TAG, "Fetched from preferences");
+            mCurrentIndex = prefs.getInt(KEY_INDEX, 0);
+        }
+
+
 
         Log.d(TAG, "Current index = " + mCurrentIndex);
 
@@ -115,7 +125,7 @@ public class QuizActivity extends AppCompatActivity {
 
     private void checkAnswer(boolean userPressedTrue) {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
-        int messageResId = 0;
+        int messageResId;
         if (answerIsTrue == userPressedTrue)
             messageResId = R.string.correct_toast;
         else
@@ -161,6 +171,10 @@ public class QuizActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(KEY_INDEX, mCurrentIndex);
+        editor.commit();
+
         Log.d(TAG, "onPause");
     }
 
