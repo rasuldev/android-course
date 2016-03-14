@@ -19,11 +19,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="24dp"
-        tools:text="Answer"/>
+        tools:text="Answer"
+        android:visibility="invisible"/>
 
     <Button
         android:id="@+id/show_answer_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/show_answer_button"/>
+
+    <TextView
+        android:id="@+id/api_level_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:textSize="12sp"
+        tools:text="API level 21"/>
 </LinearLayout>
