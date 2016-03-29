@@ -1,10 +1,12 @@
 package com.bignerdranch.android.criminalintent;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,13 +15,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Rasul on 25.03.2016.
  */
 public class CrimeListFragment extends Fragment {
+    private static final int REQUEST_DETAIL = 1;
+    private static final String TAG = "CrimeListFragment";
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mCrimeAdapter;
+
 
     @Nullable
     @Override
@@ -34,10 +40,43 @@ public class CrimeListFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_DETAIL) {
+            Log.d(TAG, String.valueOf(resultCode));
+            UUID crimeId = CrimeFragment.getCrimeId(data);
+            try {
+                int pos = CrimeLab.get(getActivity()).getCrimeIndex(crimeId);
+                updateUI(pos);
+            } catch (Exception e) {
+                Log.d(TAG, "Unknown crime id");
+            }
+        }
+    }
+
     private void updateUI() {
+        updateUI(null);
+    }
+
+    private void updateUI(Integer pos) {
         List<Crime> crimes = CrimeLab.get(getActivity()).getCrimes();
-        CrimeAdapter adapter = new CrimeAdapter(crimes);
-        mCrimeRecyclerView.setAdapter(adapter);
+
+        if (mCrimeAdapter == null) {
+            mCrimeAdapter = new CrimeAdapter(crimes);
+            mCrimeRecyclerView.setAdapter(mCrimeAdapter);
+        } else {
+            if (pos == null) {
+                mCrimeAdapter.notifyDataSetChanged();
+            } else {
+                mCrimeAdapter.notifyItemChanged(pos);
+            }
+        }
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -64,8 +103,8 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(getActivity(), mCrime.getTitle() + " clicked!", Toast.LENGTH_SHORT)
-                    .show();
+            Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
+            startActivityForResult(intent, REQUEST_DETAIL);
         }
     }
 

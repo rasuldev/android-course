@@ -36,6 +36,14 @@ public class CrimeLab {
         return null;
     }
 
+    public int getCrimeIndex(UUID id) throws Exception {
+        for (int i = 0; i < mCrimes.size(); i++) {
+            if (mCrimes.get(i).getId().equals(id)) {
+                return i;
+            }
+        }
+        throw new Exception("No crime with such id");
+    }
 
     public static CrimeLab get(Context context) {
         if (sCrimeLab == null) {
