@@ -18,18 +18,20 @@ import android.widget.EditText;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE_FRAGMENT = "DialogDateFragment";
     private static final int REQUEST_DATE_CODE = 0;
+    private static final int REQUEST_TIME_CODE = 1;
+    private static final String DIALOG_TIME_FRAGMENT = "DialogTimeFragment";
 
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
+    private Button mTimeButton;
 
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -82,7 +84,7 @@ public class CrimeFragment extends Fragment {
         });
 
         mDateButton = (Button) v.findViewById(R.id.crime_date);
-        setDateButtonText(mCrime.getDate());
+        updateDateTime(mCrime.getDate());
         mDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,6 +92,18 @@ public class CrimeFragment extends Fragment {
                 DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
                 dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE_CODE);
                 dialog.show(fm, DIALOG_DATE_FRAGMENT);
+            }
+        });
+
+        mTimeButton = (Button) v.findViewById(R.id.crime_time);
+        updateDateTime(mCrime.getDate());
+        mTimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fm = getFragmentManager();
+                TimePickerFragment dialog = TimePickerFragment.newInstance(mCrime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_TIME_CODE);
+                dialog.show(fm, DIALOG_TIME_FRAGMENT);
             }
         });
 
@@ -113,11 +127,16 @@ public class CrimeFragment extends Fragment {
 
         if (requestCode == REQUEST_DATE_CODE) {
             mCrime.setDate(DatePickerFragment.getDate(data));
-            setDateButtonText(mCrime.getDate());
+            updateDateTime(mCrime.getDate());
+        }
+
+        if (requestCode == REQUEST_TIME_CODE) {
+            mCrime.setDate(TimePickerFragment.getDate(data));
+            updateDateTime(mCrime.getDate());
         }
     }
 
-    private void setDateButtonText(Date date) {
+    private void updateDateTime(Date date) {
         SimpleDateFormat df = new SimpleDateFormat("EEEE, MMM dd, yyyy");
         mDateButton.setText(df.format(date));
     }
