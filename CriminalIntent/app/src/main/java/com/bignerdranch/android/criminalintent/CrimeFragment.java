@@ -17,7 +17,9 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
@@ -84,7 +86,6 @@ public class CrimeFragment extends Fragment {
         });
 
         mDateButton = (Button) v.findViewById(R.id.crime_date);
-        updateDateTime(mCrime.getDate());
         mDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -96,7 +97,6 @@ public class CrimeFragment extends Fragment {
         });
 
         mTimeButton = (Button) v.findViewById(R.id.crime_time);
-        updateDateTime(mCrime.getDate());
         mTimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,6 +107,8 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        updateDateTime(mCrime.getDate());
+        
         mSolvedCheckBox = (CheckBox) v.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -131,7 +133,13 @@ public class CrimeFragment extends Fragment {
         }
 
         if (requestCode == REQUEST_TIME_CODE) {
-            mCrime.setDate(TimePickerFragment.getDate(data));
+            Time time = TimePickerFragment.getTime(data);
+            Date crimeDate = mCrime.getDate();
+            Calendar c = GregorianCalendar.getInstance();
+            c.setTime(crimeDate);
+            c.set(Calendar.HOUR, time.getHour());
+            c.set(Calendar.MINUTE, time.getMinute());
+            mCrime.setDate(c.getTime());
             updateDateTime(mCrime.getDate());
         }
     }
@@ -139,5 +147,8 @@ public class CrimeFragment extends Fragment {
     private void updateDateTime(Date date) {
         SimpleDateFormat df = new SimpleDateFormat("EEEE, MMM dd, yyyy");
         mDateButton.setText(df.format(date));
+
+        df = new SimpleDateFormat("HH:mm");
+        mTimeButton.setText(df.format(date));
     }
 }
