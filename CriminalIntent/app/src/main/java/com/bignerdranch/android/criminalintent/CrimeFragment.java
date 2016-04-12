@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ public class CrimeFragment extends Fragment {
     private static final int REQUEST_DATE_CODE = 0;
     private static final int REQUEST_TIME_CODE = 1;
     private static final String DIALOG_TIME_FRAGMENT = "DialogTimeFragment";
+    private static final String TAG = "CriminalIntent";
 
     private Crime mCrime;
     private EditText mTitleField;
@@ -89,10 +91,19 @@ public class CrimeFragment extends Fragment {
         mDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FragmentManager fm = getFragmentManager();
-                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
-                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE_CODE);
-                dialog.show(fm, DIALOG_DATE_FRAGMENT);
+                if (isPhone()) {
+                    Log.d(TAG, "StartActivity date picker as fragment");
+                    startActivityForResult(DatePickerActivity.newIntent(getActivity(), mCrime.getDate()), REQUEST_DATE_CODE);
+                } else {
+                    // tablet
+                    Log.d(TAG, "StartActivity date picker as dialog");
+                    FragmentManager fm = getFragmentManager();
+                    DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+                    dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE_CODE);
+                    dialog.show(fm, DIALOG_DATE_FRAGMENT);
+                }
+
+
             }
         });
 
@@ -108,7 +119,7 @@ public class CrimeFragment extends Fragment {
         });
 
         updateDateTime(mCrime.getDate());
-        
+
         mSolvedCheckBox = (CheckBox) v.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -119,6 +130,10 @@ public class CrimeFragment extends Fragment {
         });
 
         return v;
+    }
+
+    private boolean isPhone() {
+        return false;
     }
 
     @Override

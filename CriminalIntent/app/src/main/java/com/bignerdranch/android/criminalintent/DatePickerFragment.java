@@ -6,10 +6,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 
 import java.util.Calendar;
@@ -24,6 +28,7 @@ public class DatePickerFragment extends DialogFragment {
     private static final String ARG_DATE = "Date";
     private static final String EXTRA_DATE = "com.bignerdranch.android.criminalintent.date";
     private DatePicker mDatePicker;
+    private static final String TAG = "CriminalIntent";
 
     public static DatePickerFragment newInstance(Date date) {
         Bundle args = new Bundle();
@@ -38,21 +43,34 @@ public class DatePickerFragment extends DialogFragment {
         return (Date) intent.getSerializableExtra(EXTRA_DATE);
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "DatePicker view creating");
+        View v = inflater.inflate(R.layout.dialog_date_full, null);
+        initDatePicker(v);
+        Button button = (Button) v.findViewById(R.id.date_ok_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
+        return v;
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        View v = LayoutInflater.from(getActivity())
-                .inflate(R.layout.dialog_date, null);
+        Log.d(TAG, "DatePicker dialog creating");
+        //View v = LayoutInflater.from(getActivity())
+        //        .inflate(R.layout.dialog_date, null);
 
-        Date crimeDate = (Date) getArguments().getSerializable(ARG_DATE);
-        Calendar c = Calendar.getInstance();
-        c.setTime(crimeDate);
+        //initDatePicker(v);
 
-        mDatePicker = (DatePicker) v.findViewById(R.id.dialog_date_date_picker);
-        mDatePicker.init(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), null);
 
         return new AlertDialog.Builder(getActivity())
-                .setView(v)
+                .setView(getView())
                 .setTitle(R.string.date_picker_title)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
@@ -67,6 +85,15 @@ public class DatePickerFragment extends DialogFragment {
                 .create();
     }
 
+    private void initDatePicker(View v) {
+        Date crimeDate = (Date) getArguments().getSerializable(ARG_DATE);
+        Calendar c = Calendar.getInstance();
+        c.setTime(crimeDate);
+
+        mDatePicker = (DatePicker) v.findViewById(R.id.dialog_date_date_picker);
+        mDatePicker.init(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), null);
+    }
+
     private void sendResult(int resultCode, Date date) {
         if (getTargetFragment() == null) {
             return;
@@ -76,6 +103,6 @@ public class DatePickerFragment extends DialogFragment {
         intent.putExtra(EXTRA_DATE, date);
 
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
-        
+
     }
 }
