@@ -34,13 +34,13 @@ public class CrimeLab {
         return null;
     }
 
-    public int getCrimeIndex(UUID id) throws Exception {
+    public int getCrimeIndex(UUID id) {
         for (int i = 0; i < mCrimes.size(); i++) {
             if (mCrimes.get(i).getId().equals(id)) {
                 return i;
             }
         }
-        throw new Exception("No crime with such id");
+        return -1;
     }
 
     public static CrimeLab get(Context context) {
@@ -52,4 +52,7 @@ public class CrimeLab {
     }
 
 
+    public void removeCrime(UUID id) {
+        mCrimes.remove(getCrimeIndex(id));
+    }
 }
