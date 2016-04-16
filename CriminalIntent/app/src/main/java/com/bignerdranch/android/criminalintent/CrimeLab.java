@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.bignerdranch.android.criminalintent.database.CrimeBaseHelper;
 import com.bignerdranch.android.criminalintent.database.CrimeCursorWrapper;
@@ -93,7 +94,8 @@ public class CrimeLab {
         return sCrimeLab;
     }
 
-
     public void removeCrime(UUID id) {
+        mDatabase.delete(CrimeDbSchema.CrimeTable.NAME,
+                Cols.UUID + "=?", new String[]{id.toString()});
     }
 }
