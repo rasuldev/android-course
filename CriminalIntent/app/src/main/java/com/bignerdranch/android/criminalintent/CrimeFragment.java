@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -160,12 +161,12 @@ public class CrimeFragment extends Fragment {
         mReportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
-                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
-
-                startActivity(Intent.createChooser(intent, getString(R.string.send_report)));
+                ShareCompat.IntentBuilder builder = ShareCompat.IntentBuilder.from(getActivity());
+                builder.setType("text/plain");
+                builder.setText(getCrimeReport());
+                builder.setSubject(getString(R.string.crime_report_subject));
+                builder.setChooserTitle(R.string.send_report);
+                builder.startChooser();
             }
         });
 
