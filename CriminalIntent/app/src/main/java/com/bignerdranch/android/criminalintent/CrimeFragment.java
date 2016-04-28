@@ -54,6 +54,7 @@ public class CrimeFragment extends Fragment {
     private static final String TAG = "CriminalIntent";
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
     private static final int REQUEST_PHOTO = 3;
+    private static final String DIALOG_IMAGE_FRAGMENT = "DialogImageFragment";
 
     private Crime mCrime;
     private EditText mTitleField;
@@ -237,6 +238,16 @@ public class CrimeFragment extends Fragment {
 
         mPhotoView = (ImageView) v.findViewById(R.id.crime_photo);
         updatePhotoView();
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File photo = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
+                String imagePath = photo != null ? photo.getPath() : null;
+                ImageDialog dialog = ImageDialog.newInstance(imagePath);
+                dialog.setTargetFragment(CrimeFragment.this, -1);
+                dialog.show(getFragmentManager(), DIALOG_IMAGE_FRAGMENT);
+            }
+        });
 
         return v;
     }

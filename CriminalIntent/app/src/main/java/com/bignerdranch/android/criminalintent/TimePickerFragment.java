@@ -84,13 +84,11 @@ public class TimePickerFragment extends DialogFragment {
                         }
 
                 )
-                            .
-
-                    create();
-                }
+                .create();
+    }
 
 //    public static Date getDate(Intent data) {
 //        //Date date = data.getSerializableExtra(EXTRA_)
 //
 //    }
-    }
+}
