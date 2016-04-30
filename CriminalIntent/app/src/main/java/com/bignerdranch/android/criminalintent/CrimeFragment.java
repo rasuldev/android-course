@@ -28,6 +28,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -237,7 +238,7 @@ public class CrimeFragment extends Fragment {
         });
 
         mPhotoView = (ImageView) v.findViewById(R.id.crime_photo);
-        updatePhotoView();
+
         mPhotoView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -248,6 +249,20 @@ public class CrimeFragment extends Fragment {
                 dialog.show(getFragmentManager(), DIALOG_IMAGE_FRAGMENT);
             }
         });
+
+        ViewTreeObserver observer = mPhotoView.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                Log.d(TAG, "Photo view width: " + mPhotoView.getWidth());
+                Log.d(TAG, "Photo view height: " + mPhotoView.getHeight());
+                Log.d(TAG, "Photo view image: " + mPhotoView.getDrawable());
+                if (mPhotoView.getDrawable() == null) {
+                    updatePhotoView();
+                }
+            }
+        });
+
 
         return v;
     }
@@ -378,7 +393,9 @@ public class CrimeFragment extends Fragment {
         if (mPhotoFile == null || !mPhotoFile.exists()) {
             mPhotoView.setImageDrawable(null);
         } else {
-            mPhotoView.setImageBitmap(PictureUtils.getScaledBitmap(mPhotoFile.getPath(), getActivity()));
+            Log.d(TAG, "updatePhotoView: photo view width = " + mPhotoView.getWidth());
+            mPhotoView.setImageBitmap(PictureUtils.getScaledBitmap(mPhotoFile.getPath(),
+                    mPhotoView.getWidth(), mPhotoView.getHeight()));
         }
     }
 }
