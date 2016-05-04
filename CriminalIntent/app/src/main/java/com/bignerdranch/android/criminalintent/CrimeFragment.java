@@ -69,6 +69,23 @@ public class CrimeFragment extends Fragment {
     private ImageView mPhotoView;
     private File mPhotoFile;
 
+    private Callbacks mCallbacks;
+    public interface Callbacks {
+        void onCrimeUpdated(Crime crime);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mCallbacks = (Callbacks) activity;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
@@ -136,6 +153,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 mCrime.setTitle(s.toString());
+                updateCrime();
             }
 
             @Override
@@ -174,6 +192,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
+                updateCrime();
             }
         });
 
@@ -276,6 +295,7 @@ public class CrimeFragment extends Fragment {
         if (requestCode == REQUEST_DATE_CODE) {
             mCrime.setDate(DatePickerFragment.getDate(data));
             updateDateTime(mCrime.getDate());
+            updateCrime();
         }
 
         if (requestCode == REQUEST_TIME_CODE) {
@@ -287,6 +307,7 @@ public class CrimeFragment extends Fragment {
             c.set(Calendar.MINUTE, time.getMinute());
             mCrime.setDate(c.getTime());
             updateDateTime(mCrime.getDate());
+            updateCrime();
         }
 
         if (requestCode == REQUEST_CONTACT && data != null) {
@@ -397,5 +418,10 @@ public class CrimeFragment extends Fragment {
             mPhotoView.setImageBitmap(PictureUtils.getScaledBitmap(mPhotoFile.getPath(),
                     mPhotoView.getWidth(), mPhotoView.getHeight()));
         }
+    }
+
+    private void updateCrime() {
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+        mCallbacks.onCrimeUpdated(mCrime);
     }
 }
