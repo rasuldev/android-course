@@ -5,7 +5,7 @@
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="70dp"
-                style="">
+              android:background="@drawable/holder_background">
     <ImageView
         android:id="@+id/activity_holder_image_view"
         android:layout_width="70dp"
