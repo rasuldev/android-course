@@ -3,6 +3,12 @@ package com.bignerdranch.android.photogallery;
 import android.net.Uri;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,6 +16,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -67,12 +74,13 @@ public class FlickrFetchr {
         try {
             String jsonResponse = getUrlString(url);
             Log.i(TAG,"Fetched items: " + jsonResponse);
-            items = parseItems(jsonResponse);
+            items = parseItemsGson(jsonResponse);
         } catch (IOException e) {
             Log.e(TAG, "Failed to fetch items", e);
         } catch (JSONException e) {
             Log.e(TAG, "Failed to parse JSON", e);
         }
+
 
         return items;
     }
@@ -93,6 +101,25 @@ public class FlickrFetchr {
             galleryItem.setUrl(photo.getString("url_s"));
             items.add(galleryItem);
         }
+        return items;
+    }
+
+    private List<GalleryItem> parseItemsGson(String json) throws JSONException {
+        Gson gson = new GsonBuilder()
+//                    .setFieldNamingStrategy(new FieldNamingStrategy() {
+//                        @Override
+//                        public String translateName(Field f) {
+//                            f.getName()
+//
+//                        }
+//                    })
+                .create();
+        JsonParser parser = new JsonParser();
+        JsonElement jsonElement = parser.parse(json);
+        JsonElement photoArr = jsonElement.getAsJsonObject().get("photos").getAsJsonObject().get("photo");
+
+        Type type = new TypeToken<List<GalleryItem>>() {}.getType();
+        List<GalleryItem> items = gson.fromJson(photoArr, type);
         return items;
     }
 }
