@@ -2,9 +2,11 @@ package com.bignerdranch.android.photogallery;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.support.v4.util.LruCache;
 import android.util.Log;
 
 import java.io.IOException;
@@ -23,6 +25,8 @@ public class ThumbnailDownloader<T> extends HandlerThread {
 
     private Handler mResponseHandler;
     private ThumbnailDownloadListener<T> mThumbnailDownloadListener;
+
+    private LruCache<String, Bitmap> mCache = new LruCache<>(100);
 
     public void setThumbnailDownloadListener(ThumbnailDownloadListener<T> listener) {
         mThumbnailDownloadListener = listener;
@@ -59,9 +63,18 @@ public class ThumbnailDownloader<T> extends HandlerThread {
                 return;
             }
 
-            byte[] bmpBytes = new FlickrFetchr().getUrlBytes(url);
-            final Bitmap bmp = BitmapFactory.decodeByteArray(bmpBytes, 0, bmpBytes.length);
-            Log.i(TAG, "Bitmap created");
+            // try to find in cache first
+            Bitmap bmp = mCache.get(url);
+            if (bmp == null) {
+                byte[] bmpBytes = new FlickrFetchr().getUrlBytes(url);
+                bmp = BitmapFactory.decodeByteArray(bmpBytes, 0, bmpBytes.length);
+                Log.i(TAG, "Bitmap created");
+                mCache.put(url, bmp);
+            } else {
+                Log.i(TAG, "Used cached bitmap");
+            }
+
+            final Bitmap thumbnail = bmp;
 
             mResponseHandler.post(new Runnable() {
                 @Override
@@ -73,7 +86,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
                     mRequestMap.remove(target);
 
                     if (mThumbnailDownloadListener != null) {
-                        mThumbnailDownloadListener.onThumbnailDowload(target, bmp);
+                        mThumbnailDownloadListener.onThumbnailDowload(target, thumbnail);
                     }
                 }
             });
