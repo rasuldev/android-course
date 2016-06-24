@@ -20,8 +20,11 @@ import java.util.List;
  */
 public class PhotoGalleryFragment extends Fragment {
     public static final String TAG = "PhotoGallery";
+    public static final int PAGE_SIZE = 100;
     private RecyclerView mRecyclerView;
-    private List<GalleryItem> mItems = new ArrayList<>();
+    private GridLayoutManager mLayoutManager;
+    private PhotoAdapter mPhotoAdapter;
+    private FetchItemsTask mFetchItemsTask;
 
     public static PhotoGalleryFragment newInstance() {
         return new PhotoGalleryFragment();
@@ -31,7 +34,9 @@ public class PhotoGalleryFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        new FetchItemsTask().execute();
+        mPhotoAdapter = new PhotoAdapter(new ArrayList<GalleryItem>());
+        mFetchItemsTask = new FetchItemsTask(1);
+        mFetchItemsTask.execute();
     }
 
     @Nullable
@@ -39,7 +44,9 @@ public class PhotoGalleryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
         mRecyclerView = (RecyclerView) v.findViewById(R.id.photo_gallery_recycler_view);
-        mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        mLayoutManager = new GridLayoutManager(getActivity(), 3);
+        mRecyclerView.setAdapter(mPhotoAdapter);
+        mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -49,15 +56,28 @@ public class PhotoGalleryFragment extends Fragment {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                Log.i(TAG, "dx="+dx+"; dy="+dy);
+                if (dy > 0) {
+                    int total = mLayoutManager.getItemCount();
+                    int lastVisible = mLayoutManager.findLastVisibleItemPosition();
+                    if (lastVisible > total - 2) {
+                        // load next page
+                        if (mFetchItemsTask.getStatus() == AsyncTask.Status.FINISHED) {
+                            Log.i(TAG, "Load new portion");
+                            int pageNum = total / PAGE_SIZE + 1;
+                            mFetchItemsTask = new FetchItemsTask(pageNum);
+                            mFetchItemsTask.execute();
+                        }
+                    }
+                }
+
             }
         });
         return v;
     }
 
-    private void setupAdapter() {
+    private void setupAdapter(List<GalleryItem> galleryItems) {
         if (isAdded()) {
-            mRecyclerView.setAdapter(new PhotoAdapter(mItems));
+            mPhotoAdapter.addGalleryItems(galleryItems);
         }
     }
 
@@ -66,7 +86,7 @@ public class PhotoGalleryFragment extends Fragment {
 
         public PhotoHolder(View itemView) {
             super(itemView);
-            mTextView = (TextView)itemView;
+            mTextView = (TextView) itemView;
         }
 
         public void bind(GalleryItem item) {
@@ -77,6 +97,20 @@ public class PhotoGalleryFragment extends Fragment {
     private class PhotoAdapter extends RecyclerView.Adapter<PhotoHolder> {
 
         private List<GalleryItem> mGalleryItems;
+
+        public List<GalleryItem> getGalleryItems() {
+            return mGalleryItems;
+        }
+
+        public void setGalleryItems(List<GalleryItem> galleryItems) {
+            mGalleryItems = galleryItems;
+            notifyDataSetChanged();
+        }
+
+        public void addGalleryItems(List<GalleryItem> galleryItems) {
+            mGalleryItems.addAll(galleryItems);
+            notifyDataSetChanged();
+        }
 
         public PhotoAdapter(List<GalleryItem> galleryItems) {
 
@@ -102,6 +136,12 @@ public class PhotoGalleryFragment extends Fragment {
 
     private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
 
+        final private int mPage;
+
+        public FetchItemsTask(int page) {
+            mPage = page;
+        }
+
         @Override
         protected List<GalleryItem> doInBackground(Void... params) {
 //            try {
@@ -110,13 +150,12 @@ public class PhotoGalleryFragment extends Fragment {
 //            } catch (IOException e) {
 //                Log.e(TAG, "Failed to fetch url: ", e);
 //            }
-            return new FlickrFetchr().fetchItems();
+            return new FlickrFetchr().fetchItems(mPage);
         }
 
         @Override
         protected void onPostExecute(List<GalleryItem> galleryItems) {
-            mItems = galleryItems;
-            setupAdapter();
+            setupAdapter(galleryItems);
         }
     }
 }
