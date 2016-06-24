@@ -67,9 +67,7 @@ public class FlickrFetchr {
         try {
             String jsonResponse = getUrlString(url);
             Log.i(TAG,"Fetched items: " + jsonResponse);
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-            parseItems(items, jsonObject);
-
+            items = parseItems(jsonResponse);
         } catch (IOException e) {
             Log.e(TAG, "Failed to fetch items", e);
         } catch (JSONException e) {
@@ -79,7 +77,9 @@ public class FlickrFetchr {
         return items;
     }
 
-    private void parseItems(List<GalleryItem> items, JSONObject jsonObject) throws JSONException {
+    private List<GalleryItem> parseItems(String json) throws JSONException {
+        List<GalleryItem> items = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject(json);
         JSONObject photos = jsonObject.getJSONObject("photos");
         JSONArray photosJSONArray = photos.getJSONArray("photo");
         for (int i = 0; i < photosJSONArray.length(); i++) {
@@ -93,6 +93,6 @@ public class FlickrFetchr {
             galleryItem.setUrl(photo.getString("url_s"));
             items.add(galleryItem);
         }
-
+        return items;
     }
 }
