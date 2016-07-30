@@ -79,6 +79,7 @@ public class PhotoGalleryFragment extends Fragment {
                 QueryPrefs.setStoredQuery(getActivity(), query);
                 mPhotoAdapter.setGalleryItems(new ArrayList<GalleryItem>());
                 updateItems();
+                searchView.clearFocus();
                 return true;
             }
 
@@ -89,10 +90,11 @@ public class PhotoGalleryFragment extends Fragment {
             }
         });
 
-        searchView.setOnClickListener(new View.OnClickListener() {
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String query = QueryPrefs.getStoredQuery(getActivity());
+                Log.i(TAG, "Search clicked. Stored query: " + query);
                 searchView.setQuery(query, false);
             }
         });
