@@ -1,5 +1,6 @@
 package com.bignerdranch.android.photogallery;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -52,8 +53,10 @@ public class PhotoGalleryFragment extends Fragment {
         mThumbnailDownloader.setThumbnailDownloadListener(new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
             @Override
             public void onThumbnailDowload(PhotoHolder target, Bitmap thumbnail) {
-                Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
-                target.bind(drawable);
+                if (isAdded()) {
+                    Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
+                    target.bind(drawable);
+                }
             }
         });
         mThumbnailDownloader.start();
@@ -93,6 +96,9 @@ public class PhotoGalleryFragment extends Fragment {
                 searchView.setQuery(query, false);
             }
         });
+
+        MenuItem togglePolling = menu.findItem(R.id.menu_toggle_polling);
+        togglePolling.setTitle(PollService.isAlarmOn(getActivity()) ? R.string.stop_polling : R.string.start_polling);
     }
 
     @Override
@@ -101,6 +107,11 @@ public class PhotoGalleryFragment extends Fragment {
             case R.id.menu_item_clear:
                 QueryPrefs.setStoredQuery(getActivity(), null);
                 updateItems();
+                return true;
+            case R.id.menu_toggle_polling:
+                boolean shouldStart = !PollService.isAlarmOn(getActivity());
+                PollService.setAlarm(getActivity(), shouldStart);
+                getActivity().invalidateOptionsMenu();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -184,7 +195,9 @@ public class PhotoGalleryFragment extends Fragment {
         }
 
         public void bind(Drawable item) {
-            mImageView.setImageDrawable(item);
+            if (isAdded()) {
+                mImageView.setImageDrawable(item);
+            }
         }
     }
 
