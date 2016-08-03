@@ -54,7 +54,7 @@ public class PollService extends IntentService {
             Log.i(TAG, "Got a new result: " + id);
 
             Resources res = getResources();
-            PendingIntent pi = PendingIntent.getService(this, 0, PhotoGalleryActivity.newIntent(this), 0);
+            PendingIntent pi = PendingIntent.getActivity(this, 0, PhotoGalleryActivity.newIntent(this), 0);
             Notification notification = new NotificationCompat.Builder(this)
                     .setTicker(res.getString(R.string.new_pic_title))
                     .setSmallIcon(android.R.drawable.ic_menu_report_image)
