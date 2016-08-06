@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Created by Rasul on 17.06.2016.
  */
-public class PhotoGalleryFragment extends Fragment {
+public class PhotoGalleryFragment extends VisibleFragment {
     public static final String TAG = "PhotoGallery";
     public static final int PAGE_SIZE = 102;
     private RecyclerView mRecyclerView;

@@ -1,5 +1,6 @@
 package com.bignerdranch.android.photogallery;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
@@ -21,6 +22,11 @@ import java.util.List;
 public class PollService extends IntentService {
     private static final String TAG = "PhotoPollService";
     private static final int POLL_INTERVAL = 60 * 1000; // 60 secs
+    public static final String ACTION_SHOW_NOTIFICATION =
+            "com.bignerdranch.android.photogallery.SHOW_NOTIFICATION";
+    public static final String PERM_PRIVATE = "com.bignerdranch.android.photogallery.PRIVATE";
+    public static final String EXTRA_REQUEST_CODE = "request_code";
+    public static final String EXTRA_NOTIFICATION = "notification";
 
     public static Intent newIntent(Context context) {
         return new Intent(context, PollService.class);
@@ -63,9 +69,19 @@ public class PollService extends IntentService {
                     .setContentIntent(pi)
                     .setAutoCancel(true)
                     .build();
-            NotificationManagerCompat.from(this).notify(0, notification);
+            //NotificationManagerCompat.from(this).notify(0, notification);
+
+            //sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION), PERM_PRIVATE);
+            showBackgroundNotification(0, notification);
         }
         QueryPrefs.setLastId(this, id);
+    }
+
+    private void showBackgroundNotification(int requestCode, Notification notification) {
+        Intent i = new Intent(ACTION_SHOW_NOTIFICATION);
+        i.putExtra(EXTRA_REQUEST_CODE, requestCode);
+        i.putExtra(EXTRA_NOTIFICATION, notification);
+        sendOrderedBroadcast(i, PERM_PRIVATE, null, null, Activity.RESULT_OK, null, null);
     }
 
     private boolean isNetworkAvailableAndConnected() {
@@ -87,6 +103,8 @@ public class PollService extends IntentService {
             alarmManager.cancel(pi);
             pi.cancel();
         }
+
+        QueryPrefs.setAlarmOn(context, isOn);
     }
 
     public static boolean isAlarmOn(Context context) {
